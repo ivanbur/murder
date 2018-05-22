@@ -1,0 +1,60 @@
+Ivan Burgert & Devon Caron
+
+9 people, one muderer, eight innocents. when lights go out, murderer tries to kill somebody.
+
+innocent = bystander
+
+maybe ascii art
+
+language being used are: javascript, html, css, python (a little bit)
+
+multiple people can play from different computers (up to 9 per game room or we can have everybody in one room with a ratio of 8 bystanders to one murderer)
+
+The bystanders are trying to kill or catch the murderer before he kills all the innocents
+Nobody knows who murderer is except for the murderer
+
+
+Murderer has knife
+One out of every eight bystander has a gun
+Bystanders are trying to work together to kill the murderer, but if a bystander shoots another bystander then he is disqualified and drops the gun
+Murderer can sprint
+Murderer can also see footprints left behind by bystanders, colored by bystander (each bystander has their own color)
+Footprints vanish after a while
+Murderer will take victim's name and color after killing somebody to avoid being caught
+If the murderer doesn't kill anybody for a period of time they turn black
+
+Ratio of 8 bystanders to one murderer
+
+The room that you are in is lit up so that you can see it and the other ones are dark
+When a player dies, it says "Player has died" at the top (it doesn't use the name of the player)
+9 rooms (3x3 grid)
+
+
+Characters have a random name:
+Alpha,
+Bravo,
+Charlie,
+Delta,
+Echo,
+Foxtrot,
+Golf,
+Hotel,
+India,
+Julliet,
+Kilo,
+Lima,
+Miko,
+Matt,
+November,
+Oscar,
+Papa,
+Quebec,
+Romeo,
+Sierra,
+Tango,
+Uniform,
+Victor,
+Whiskey,
+X-ray,
+Yankee,
+Zulu
