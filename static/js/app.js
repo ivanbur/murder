@@ -12,6 +12,7 @@ firebase.initializeApp(config);
 var database = firebase.database();
 var canvas = document.getElementById("Canvas");
 var context = canvas.getContext("2d");
+var playerID = 0;
 
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
@@ -42,7 +43,9 @@ $(document).ready(function() {
 });
 
 function playGame() {
-	
+	database.ref("people/").once("value").then(function(snapshot) {
+		playerID = snapshot.val().length;
+	});
 }
 
 function draw() {
@@ -55,7 +58,28 @@ function draw() {
 }
 
 function setEventListeners() {
-	addEven
+	addEventListener('keydown', function(event) {
+		if (event.keyCode == 87) { // w keycode
+			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
+				database.ref("people/" + playerID + "/y").set(snapshot.val() - 10);
+			});
+		}
+		if (event.keyCode == 65) { // a keycode
+			database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
+				database.ref("people/" + playerID + "/x").set(snapshot.val() - 10);
+			});
+		}
+		if (event.keyCode == 83) { // s keycode
+			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
+				database.ref("people/" + playerID + "/y").set(snapshot.val() + 10);
+			});
+		}
+		if (event.keyCode == 68) { // d keycode
+			database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
+				database.ref("people/" + playerID + "/x").set(snapshot.val() + 10);
+			});
+		}
+	});
 }
 
 
