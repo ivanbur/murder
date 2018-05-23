@@ -46,7 +46,7 @@ $(document).ready(function() {
 });
 
 function playGame() {
-	player.color = colors[Math.round(Math.random() * color.length)];
+	player.color = colors[Math.round(Math.random() * colors.length)];
 	console.log(player);
 
 	database.ref("people/").once("value").then(function(snapshot) {
