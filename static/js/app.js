@@ -18,35 +18,41 @@ canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
 var player = {
-	color: "green",
+	color: "",
 	name: "alpha",
-	group: "bystander",
+	group: "",
 	direction: 90,
 	x: 50,
 	y: 50,
-	hasGun: true
-}
-
-var player2 = {
-	color: "blue",
-	name: "beta",
-	group: "murderer",
-	direction: 0,
-	x: 150,
-	y: 250,
 	hasGun: false
 }
 
+var colors = ["green", "blue", "red"];
+var group = ["bystander", "murderer"];
+
+// var player2 = {
+// 	color: "blue",
+// 	name: "beta",
+// 	group: "murderer",
+// 	direction: 0,
+// 	x: 150,
+// 	y: 250,
+// 	hasGun: false
+// }
+
 $(document).ready(function() {
-	database.ref("people/0").set(player);
-	database.ref("people/1").set(player2);
+	// database.ref("people/0").set(player);
+	// database.ref("people/1").set(player2);
 });
 
 function playGame() {
-	// database.ref("people/").once("value").then(function(snapshot) {
-	// 	playerID = snapshot.val().length;
-	// });
-	playerID = 0;
+	player.color = color[(int)(Math.random() * color.length)];
+
+	database.ref("people/").once("value").then(function(snapshot) {
+	 	playerID = snapshot.val().length;
+	});
+	database.ref("people/playerID").set(player);
+	//playerID = 0;
 	setEventListeners();
 	draw();
 }
