@@ -43,32 +43,43 @@ $(document).ready(function() {
 });
 
 function playGame() {
-	database.ref("people/").once("value").then(function(snapshot) {
-		playerID = snapshot.val().length;
-	});
+	// database.ref("people/").once("value").then(function(snapshot) {
+	// 	playerID = snapshot.val().length;
+	// });
+	playerID = 0;
+	setEventListeners();
+	draw();
 }
 
 function draw() {
+	
+
 	database.ref("people/").once("value").then(function(snapshot) {
+		context.fillStyle = "white";
+		context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 		for (var i = 0; i < snapshot.val().length; i++) {
+			console.log(snapshot.val()[i].color + "  -  " + i);
 			context.fillStyle = snapshot.val()[i].color;
 			context.fillRect(snapshot.val()[i].x, snapshot.val()[i].y, 50, 50);
 		}
 	});
+	
+	setTimeout(draw, 100);
 }
 
 function setEventListeners() {
+	console.log("testing1");
 	addEventListener('keydown', function(event) {
 		if (event.keyCode == 87) { // w keycode
 			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 				database.ref("people/" + playerID + "/y").set(snapshot.val() - 10);
 			});
 		}
-		if (event.keyCode == 65) { // a keycode
-			database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
-				database.ref("people/" + playerID + "/x").set(snapshot.val() - 10);
-			});
-		}
+		// if (event.keyCode == 65) { // a keycode
+		// 	database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
+		// 		database.ref("people/" + playerID + "/x").set(snapshot.val() - 10);
+		// 	});
+		// }
 		if (event.keyCode == 83) { // s keycode
 			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 				database.ref("people/" + playerID + "/y").set(snapshot.val() + 10);
@@ -80,7 +91,49 @@ function setEventListeners() {
 			});
 		}
 	});
+	
+	addEventListener('keydown', function(event) {
+		if (event.keyCode == 65) {
+			database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
+				database.ref("people/" + playerID + "/x").set(snapshot.val() - 10);
+			});
+		}
+	});
 }
+
+playGame();
+
+/*
+
+Keep in mind to press multiple keys at once
+
+var keys = {
+    length: 0
+};
+
+document.onkeydown = function(e) {
+    if (!keys[e.keyCode]) {
+        keys[e.keyCode] = true;
+        keys.length++;
+    }
+    
+    if (keys[87] && keys[68] && !keys[83] && !keys[65]) {
+    	document.body.innerHTML = "PRESSING W AND D";
+    }
+}
+
+document.onkeyup = function(e) {
+    if (keys[e.keyCode]) {
+        keys[e.keyCode] = false;
+        keys.length--;
+    }
+}
+
+setInterval(function() {    
+    document.body.innerHTML = "You are pressing ".concat(keys.length, " keys at the same time");
+}, 500);
+
+*/
 
 
 /* Example (this one happens one time):
@@ -91,6 +144,9 @@ database.ref("people/chara").once("value").then(function(snapshot) {
 });
 
 */
+
+
+
 
 
 
