@@ -1,0 +1,46 @@
+object player = { 
+	constructor(color, name, initx, inity, initHasWeapon) {
+		this.color = Color;
+		this.name = name;
+		this.x = initx;
+		this.y = inity;
+		this.hasWeapon = initHasWeapon;
+		this.direction = 'up';
+	}
+	shootGun() {
+		if (this.hasWeapon === true) {
+			
+		}
+	}
+}
+
+object murderer = { 
+	constructor(initColor, initName, initX, initY) {
+		this.color = initColor;
+		this.name = initName;
+		this.x = initX;
+		this.y = initY;
+		this.hasKnife = true;
+		this.direction = 'up';
+	}
+	throwKnife() {
+		if (this.hasKnife === true) {
+			let knifeTimer = new Timer(10/*ms*/);
+			knifeTimer.addEventListener(new EventListener(this) {
+				let counter = 0;
+				counter++;
+				if (counter <= 25) {
+					knife.knifeX += 10;
+				}
+			});
+		}
+	}
+}
+
+object knife = {
+	constructor() {
+		this.isOnMurderer = true;
+		this.x = murderer.x;
+		this.y = murderer.y;
+	}
+}
