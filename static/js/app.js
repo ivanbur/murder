@@ -12,25 +12,52 @@ firebase.initializeApp(config);
 var database = firebase.database();
 var canvas = document.getElementById("Canvas");
 var context = canvas.getContext("2d");
-var playerID = 0;
+var playerID = "";
 
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
 var player = {
-	color: "",
-	name: "charlie",
-	group: "",
+	color: "default",
+	name: "default",
+	group: "default",
 	direction: 90,
 	x: 50,
 	y: 50,
 	hasGun: false
 }
 
-var colors = ["green", "blue", "red"];
+var colors = ["green", "blue", "red", "yellow", "brown", "pink", "purple"];
 var group = ["bystander", "murderer"];
 var keys = { length: 0 }
 const playerMovement = 10;
+var names = {"Alpha": true,
+"Bravo": true,
+"Charlie": true,
+"Delta": true,
+"Echo": true,
+"Foxtrot": true,
+"Golf": true,
+"Hotel": true,
+"India": true,
+"Julliet": true,
+"Kilo": true,
+"Lima": true,
+"Miko": true,
+"Matt": true,
+"November": true,
+"Oscar": true,
+"Papa": true,
+"Quebec": true,
+"Romeo": true,
+"Sierra": true,
+"Tango": true,
+"Uniform": true,
+"Victor": true,
+"Whiskey": true,
+"X-ray": true,
+"Yankee": true,
+"Zulu": true}
 
 // var player2 = {
 // 	color: "blue",
@@ -45,55 +72,51 @@ const playerMovement = 10;
 $(document).ready(function() {
 	// database.ref("people/0").set(player);
 	// database.ref("people/1").set(player2);
+	//database.ref("names/").set(names);
 });
+
+function pickRandomProperty(obj) {
+    var result;
+    var count = 0;
+    for (var prop in obj)
+        if (Math.random() < 1/++count)
+           result = prop;
+    return result;
+}
 
 function playGame() {
 	player.color = colors[Math.round(Math.random() * colors.length)];
-
-	database.ref("people/").once("value").then(function(snapshot) {
-	 	playerID = snapshot.val().length;
-	 	database.ref("people/" + playerID).set(player);
+	database.ref("names/").once("value").then(function(snapshot) {
+		var property = pickRandomProperty(snapshot.val());
+		console.log("#1 - " + snapshot.val()[property]);
+		while (!snapshot.val()[property]) {
+			console.log("#2 - " + snapshot.val()[property]);
+			property = pickRandomProperty(snapshot.val());
+			console.log("#3 - " + snapshot.val()[property]);
+		}
+		console.log("should be playerid - " + property);
+		playerID = property;
+		player.name = playerID;
+		let obj = snapshot.val();
+		console.log(obj);
+		console.log(snapshot.val());
+		obj[playerID] = false;
+		console.log(obj);
+		database.ref("names/").set(obj);
+		try {
+			console.log("PLAYERID - " + playerID);
+			database.ref("people/" + playerID).set(player);
+		}
+		catch(error) {
+			console.log("bad things happened");
+			console.log(error);
+		}
+		
 	});
-	//setEventListeners();
-	//setInterval(draw, 1);
+	database.ref("playersOnline/").once("value").then(function(snapshot) {
+		database.ref("playersOnline/").set(snapshot.val() + 1);
+	});
 }
-
-// function draw() {
-// 	database.ref("people/").once("value").then(function(snapshot) {
-// 		context.fillStyle = "white";
-// 		context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-// 		for (var i = 0; i < snapshot.val().length; i++) {
-// 			context.fillStyle = snapshot.val()[i].color;
-// 			context.fillRect(snapshot.val()[i].x, snapshot.val()[i].y, 50, 50);
-// 		}
-// 	});
-// 	//console.log("sup");
-// }
-
-// function setEventListeners() {
-// 	addEventListener('keydown', function(event) {
-// 		if (event.keyCode == 87) { // w keycode
-// 			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
-// 				database.ref("people/" + playerID + "/y").set(snapshot.val() - 10);
-// 			});
-// 		}
-// 		if (event.keyCode == 65) { // a keycode
-// 		 	database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
-// 		 		database.ref("people/" + playerID + "/x").set(snapshot.val() - 10);
-// 		 	});
-// 		}
-// 		if (event.keyCode == 83) { // s keycode
-// 			database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
-// 				database.ref("people/" + playerID + "/y").set(snapshot.val() + 10);
-// 			});
-// 		}
-// 		if (event.keyCode == 68) { // d keycode
-// 			database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
-// 				database.ref("people/" + playerID + "/x").set(snapshot.val() + 10);
-// 			});
-// 		}
-// 	});
-// }
 
 document.onkeydown = function(event) {
 	if (!keys[event.keyCode]) {
@@ -128,28 +151,73 @@ document.onkeyup = function(event) {
 		keys[event.keyCode] = false;
 		keys.length--;
 	}
+	
+	
 }
 
 database.ref("people/").on("value", function(snapshot) {
 	context.fillStyle = "white";
 	for (var n in snapshot.val()) {
-		//context.clearRect(n.x - playerMovement, n.y - playerMovement, 50 + (playerMovement*2), 50 + (playerMovement*2));
+		context.clearRect(snapshot.val()[n].x - playerMovement, snapshot.val()[n].y - playerMovement, 50 + (playerMovement*2), 50 + (playerMovement*2));
 		console.log(n);
+		console.log(snapshot.val()[n]);
+		context.fillStyle = snapshot.val()[n].color;
+		console.log("color" + snapshot.val()[n].color);
+		console.log(snapshot.val()[n].x + ", " + snapshot.val()[n].y);
+		context.fillRect(snapshot.val()[n].x, snapshot.val()[n].y, 50, 50);
 	}
 
-	// for (var i in snapshot.val()) {
-	// 	context.fillStyle = i.color;
+	//for (var i in snapshot.val()) {
+	// 	try {
+	//		context.fillStyle = i.color;
+	//	}
+	//	catch(error) {
+	//		console.log("errorerrorerror");
+	//	}
+	//	
+	//	context.fillStyle = i.color;
+	//	console.log("x")
 	// 	context.fillRect(i.x, i.y, 50, 50);
-	// }
+	//}
 
-
+	
 });
 
+database.ref("playersOnline/")
+
 window.addEventListener("beforeunload", function(e) {
+	console.log("debug1");
+	
+	console.log("debug2");
+	database.ref("names/" + playerID).set(true);
+	database.ref("playersOnline/").once("value", function(snapshot) {
+		database.ref("playersOnline/").set(snapshot.val() - 1);
+	});
+	//database.ref("names/").once("value").then(function(snapshot) {
+		//try {
+		//	let arr2 = snapshot.val();
+		//	console.log("--" + snapshot.val());
+		//	console.log("-_-" + arr2);
+		//	console.log("__" + playerID);
+		//	arr2.push(playerID);
+		//	console.log("_-_" + arr2);
+		//	database.ref("names/").set(arr2);
+		//}
+		//catch (error) {
+		//	console.log("error2")
+		//}
+		//console.log(Object.keys(names).length);
+	//});
+	console.log("debug3");
+	
 	database.ref("people/" + playerID).remove();
 });
 
 playGame();
+
+// make new that says playersOnline and when that changes redraw the entire thing.
+// that way when somebody exits it will clear them and you can't see them anymore.
+
 
 /*
 
