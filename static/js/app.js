@@ -28,36 +28,39 @@ var player = {
 }
 
 var colors = ["green", "blue", "red", "yellow", "brown", "pink", "purple"];
-var group = ["bystander", "murderer"];
-var keys = { length: 0 }
+var keys = { 
+	length: 0 
+}
 const playerMovement = 10;
-var names = {"Alpha": true,
-"Bravo": true,
-"Charlie": true,
-"Delta": true,
-"Echo": true,
-"Foxtrot": true,
-"Golf": true,
-"Hotel": true,
-"India": true,
-"Julliet": true,
-"Kilo": true,
-"Lima": true,
-"Miko": true,
-"Matt": true,
-"November": true,
-"Oscar": true,
-"Papa": true,
-"Quebec": true,
-"Romeo": true,
-"Sierra": true,
-"Tango": true,
-"Uniform": true,
-"Victor": true,
-"Whiskey": true,
-"X-ray": true,
-"Yankee": true,
-"Zulu": true}
+var names = {
+	"Alpha": true,
+	"Bravo": true,
+	"Charlie": true,
+	"Delta": true,
+	"Echo": true,
+	"Foxtrot": true,
+	"Golf": true,
+	"Hotel": true,
+	"India": true,
+	"Julliet": true,
+	"Kilo": true,
+	"Lima": true,
+	"Miko": true,
+	"Matt": true,
+	"November": true,
+	"Oscar": true,
+	"Papa": true,
+	"Quebec": true,
+	"Romeo": true,
+	"Sierra": true,
+	"Tango": true,
+	"Uniform": true,
+	"Victor": true,
+	"Whiskey": true,
+	"X-ray": true,
+	"Yankee": true,
+	"Zulu": true
+}
 
 // var player2 = {
 // 	color: "blue",
@@ -114,7 +117,15 @@ function playGame() {
 		
 	});
 	database.ref("playersOnline/").once("value").then(function(snapshot) {
-		database.ref("playersOnline/").set(snapshot.val() + 1);
+		let arr2 = snapshot.val();
+		console.log("playerID in playersOnline - " + playerID);
+		if (arr2 == null) {
+			arr2 = [];
+		}
+		arr2.push(playerID);
+		console.log("#2 playerID in playersOnline - " + playerID);
+
+		database.ref("playersOnline/").set(arr2);
 	});
 }
 
@@ -124,24 +135,52 @@ document.onkeydown = function(event) {
 		keys.length++;
 	}
 
-	if (event.keyCode == 87) { // w keycode
+	if (keys[87] && keys.length == 1) { // w keycode
 		database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/y").set(snapshot.val() - playerMovement);
 		});
 	}
-	if (event.keyCode == 65) { // a keycode
+	if (keys[65] && keys.length == 1) { // a keycode
 	 	database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
 	 		database.ref("people/" + playerID + "/x").set(snapshot.val() - playerMovement);
 	 	});
 	}
-	if (event.keyCode == 83) { // s keycode
+	if (keys[83] && keys.length == 1) { // s keycode
 		database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/y").set(snapshot.val() + playerMovement);
 		});
 	}
-	if (event.keyCode == 68) { // d keycode
+	if (keys[68] && keys.length == 1) { // d keycode
 		database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val() + playerMovement);
+		});
+	}
+
+	if (keys[87] && keys[68] && keys.length == 2) {
+		database.ref("people/" + playerID).once("value").then(function(snapshot) {
+			database.ref("people/" + playerID + "/x").set(snapshot.val().x + playerMovement);
+			database.ref("people/" + playerID + "/y").set(snapshot.val().y - playerMovement);
+		});
+	}
+
+	if (keys[87] && keys[65] && keys.length == 2) {
+		database.ref("people/" + playerID).once("value").then(function(snapshot) {
+			database.ref("people/" + playerID + "/x").set(snapshot.val().x - playerMovement);
+			database.ref("people/" + playerID + "/y").set(snapshot.val().y - playerMovement);
+		});
+	}
+
+	if (keys[83] && keys[68] && keys.length == 2) {
+		database.ref("people/" + playerID).once("value").then(function(snapshot) {
+			database.ref("people/" + playerID + "/x").set(snapshot.val().x + playerMovement);
+			database.ref("people/" + playerID + "/y").set(snapshot.val().y + playerMovement);
+		});
+	}
+
+	if (keys[83] && keys[65] && keys.length == 2) {
+		database.ref("people/" + playerID).once("value").then(function(snapshot) {
+			database.ref("people/" + playerID + "/x").set(snapshot.val().x - playerMovement);
+			database.ref("people/" + playerID + "/y").set(snapshot.val().y + playerMovement);
 		});
 	}
 }
@@ -186,29 +225,17 @@ database.ref("people/").on("value", function(snapshot) {
 database.ref("playersOnline/")
 
 window.addEventListener("beforeunload", function(e) {
-	console.log("debug1");
 	
-	console.log("debug2");
+	// database.ref("playersOnline/").once("value", function(snapshot) {
+	// 	database.ref("playersOnline/").set(snapshot.val() - 1);
+	// });
+
+	database.ref("playersOnline/" + playerID).remove();
+
+	console.log("debug1");
 	database.ref("names/" + playerID).set(true);
-	database.ref("playersOnline/").once("value", function(snapshot) {
-		database.ref("playersOnline/").set(snapshot.val() - 1);
-	});
-	//database.ref("names/").once("value").then(function(snapshot) {
-		//try {
-		//	let arr2 = snapshot.val();
-		//	console.log("--" + snapshot.val());
-		//	console.log("-_-" + arr2);
-		//	console.log("__" + playerID);
-		//	arr2.push(playerID);
-		//	console.log("_-_" + arr2);
-		//	database.ref("names/").set(arr2);
-		//}
-		//catch (error) {
-		//	console.log("error2")
-		//}
-		//console.log(Object.keys(names).length);
-	//});
-	console.log("debug3");
+
+	console.log("debug2");
 	
 	database.ref("people/" + playerID).remove();
 });
@@ -249,24 +276,24 @@ setInterval(function() {
     document.body.innerHTML = "You are pressing ".concat(keys.length, " keys at the same time");
 }, 500);
 
-*/
 
 
-/* Example (this one happens one time):
+
+Example (this one happens one time):
 
 database.ref("people/chara").once("value").then(function(snapshot) {
 	Your code goes here
 	to get the value it's snapshot.val()
 });
 
-*/
 
 
 
 
 
 
-/* Example (this one runs every time the value changes of "peopleOnline"):
+
+Example (this one runs every time the value changes of "peopleOnline"):
 
 database.ref("peopleOnline").on("value", function(snapshot) {
 	Your code goes here
