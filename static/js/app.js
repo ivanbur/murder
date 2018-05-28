@@ -110,23 +110,22 @@ function playGame() {
 			console.log("PLAYERID - " + playerID);
 			database.ref("people/" + playerID).set(player);
 		}
-		catch(error) {
+		catch(e) {
 			console.log("bad things happened");
-			console.log(error);
+			error.log(e);
 		}
 		
 	});
-	database.ref("playersOnline/").once("value").then(function(snapshot) {
-		let arr2 = snapshot.val();
-		console.log("playerID in playersOnline - " + playerID);
-		if (arr2 == null) {
-			arr2 = [];
-		}
-		arr2.push(playerID);
-		console.log("#2 playerID in playersOnline - " + playerID);
+	// database.ref("playersOnline/").once("value").then(function(snapshot) {
+	// 	let obj2 = snapshot.val();
+	// 	console.log("playerID in playersOnline - " + playerID);
+	// 	if (obj2 == null) {
+	// 		obj2 = {};
+	// 	}
+	// 	obj2[playerID] = true;
 
-		database.ref("playersOnline/").set(arr2);
-	});
+	// 	database.ref("playersOnline/").set(arr2);
+	// });
 }
 
 document.onkeydown = function(event) {
@@ -190,9 +189,18 @@ document.onkeyup = function(event) {
 		keys[event.keyCode] = false;
 		keys.length--;
 	}
-	
-	
 }
+
+database.ref("names/").on("value", function(snapshot) {
+	context.fillStyle = "white";
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	database.ref("people/").once("value", function(snapshot) {
+		for (var i in snapshot.val()) {
+			context.fillStyle = snapshot.val()[i].color;
+			context.fillRect(snapshot.val()[i].x, snapshot.val()[i].y, 50, 50);
+		}
+	});
+});
 
 database.ref("people/").on("value", function(snapshot) {
 	context.fillStyle = "white";
@@ -222,15 +230,14 @@ database.ref("people/").on("value", function(snapshot) {
 	
 });
 
-database.ref("playersOnline/")
-
 window.addEventListener("beforeunload", function(e) {
 	
 	// database.ref("playersOnline/").once("value", function(snapshot) {
 	// 	database.ref("playersOnline/").set(snapshot.val() - 1);
 	// });
+	console.log("debug3 - " + playerID);
 
-	database.ref("playersOnline/" + playerID).remove();
+	//database.ref("playersOnline/" + playerID).remove();
 
 	console.log("debug1");
 	database.ref("names/" + playerID).set(true);
