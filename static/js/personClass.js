@@ -26,10 +26,9 @@ class Bystander {
 			
 		}
 	}
-	
 }
 
-class Murderer {
+class murderer {
 	constructor(initColor, initName, initX, initY) {
 		this.color = initColor;
 		this.name = initName;
@@ -63,6 +62,17 @@ class Murderer {
 	}
 }
 
+class bullet {
+	constructor(initX, initY, direction) {
+		this.x = initX;
+		this.y = initY;
+		this.direction = direction;
+	}
+	move() {
+		
+	}
+}
+
 class Knife {
 	constructor() {
 		this.x = Murderer.x;
@@ -70,6 +80,6 @@ class Knife {
 	}
 }
 
-let playerEx = new Bystander("blue", "Foxtrot", 300, 250, false, false);
+let playerEx = new player("blue", "Foxtrot", 300, 250, false, false);
 
 console.log(playerEx.color);

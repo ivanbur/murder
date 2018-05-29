@@ -17,15 +17,63 @@ var playerID = "";
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
-var player = {
-	color: "default",
-	name: "default",
-	group: "default",
-	direction: 90,
-	x: 50,
-	y: 50,
-	hasGun: false
+class Bystander {
+	constructor(playerColor, playerName, initx, inity, startWithWeapon) {
+		this.color = playerColor;
+		this.name = playerName;
+		this.x = initx;
+		this.y = inity;
+		this.hasWeapon = true;
+		this.direction = 90;
+	}
+	setDirection(newDir) {
+		this.direction = newDir;
+	}
+	
+	
+	shoot()  {
+		if (this.hasWeapon) {
+			
+		}
+	}
 }
+
+class Murderer {
+	constructor(initColor, initName, initX, initY) {
+		this.color = initColor;
+		this.name = initName;
+		this.x = initX;
+		this.y = initY;
+		this.direction = "up";
+		this.hasKnife = true;
+	}
+	
+	setDirection(newDir) {
+		this.direction = newDir;
+	}
+	
+	move() /*we need different directions for moving and for facing but right now lets focus on one*/{
+		if (this.direction === "up") {
+			this.y -= 10;
+		} else if (this.direction === "left") {
+			this.x -= 10;
+		} else if (this.direction === "down") {
+			this.y += 10;
+		} else if (this.direction === "right") {
+			this.x += 10;
+		}
+	}
+	stab() {
+		if (this.hasKnife) {
+			if (this.direction === "up") {
+				
+			}
+		}
+	}
+}
+
+var player;
+var player = new Bystander("default", "default", 50, 50, false);
 
 var colors = ["green", "blue", "red", "yellow", "brown", "pink", "purple"];
 var keys = { 
@@ -62,20 +110,13 @@ var names = {
 	"Zulu": true
 }
 
-// var player2 = {
-// 	color: "blue",
-// 	name: "beta",
-// 	group: "murderer",
-// 	direction: 0,
-// 	x: 150,
-// 	y: 250,
-// 	hasGun: false
-// }
-
 $(document).ready(function() {
-	// database.ref("people/0").set(player);
-	// database.ref("people/1").set(player2);
+	//database.ref("people/0").set(player);
+	//database.ref("people/1").set(player2);
 	//database.ref("names/").set(names);
+	//$("#header").show();
+	//$("#theButton").show();
+	$("#Canvas").hide();
 });
 
 function pickRandomProperty(obj) {
@@ -88,8 +129,26 @@ function pickRandomProperty(obj) {
 }
 
 function playGame() {
-	player.color = colors[Math.round(Math.random() * colors.length)];
+	$("#header").hide();
+	$("#theButton").hide();
+	$("#Canvas").show();
+	
+	
 	database.ref("names/").once("value").then(function(snapshot) {
+		var playersOnline = 0;
+		for (var i in snapshot.val()) {
+			if (!snapshot.val()[i]) {
+				playersOnline++;
+			}
+		}
+		if (playersOnline == 3) {
+			player = new Murderer("default", "default", 50, 50);
+		} else if (playersOnline == 5) {
+			player = new Bystander("default", "default", 50, 50, true);
+		} else {
+			player = new Bystander("default", "default", 50, 50, false);
+		}
+		player.color = colors[Math.round(Math.random() * colors.length)];
 		var property = pickRandomProperty(snapshot.val());
 		console.log("#1 - " + snapshot.val()[property]);
 		while (!snapshot.val()[property]) {
@@ -116,16 +175,6 @@ function playGame() {
 		}
 		
 	});
-	// database.ref("playersOnline/").once("value").then(function(snapshot) {
-	// 	let obj2 = snapshot.val();
-	// 	console.log("playerID in playersOnline - " + playerID);
-	// 	if (obj2 == null) {
-	// 		obj2 = {};
-	// 	}
-	// 	obj2[playerID] = true;
-
-	// 	database.ref("playersOnline/").set(arr2);
-	// });
 }
 
 document.onkeydown = function(event) {
@@ -206,51 +255,27 @@ database.ref("people/").on("value", function(snapshot) {
 	context.fillStyle = "white";
 	for (var n in snapshot.val()) {
 		context.clearRect(snapshot.val()[n].x - playerMovement, snapshot.val()[n].y - playerMovement, 50 + (playerMovement*2), 50 + (playerMovement*2));
-		console.log(n);
-		console.log(snapshot.val()[n]);
 		context.fillStyle = snapshot.val()[n].color;
-		console.log("color" + snapshot.val()[n].color);
-		console.log(snapshot.val()[n].x + ", " + snapshot.val()[n].y);
 		context.fillRect(snapshot.val()[n].x, snapshot.val()[n].y, 50, 50);
 	}
 
-	//for (var i in snapshot.val()) {
-	// 	try {
-	//		context.fillStyle = i.color;
-	//	}
-	//	catch(error) {
-	//		console.log("errorerrorerror");
-	//	}
-	//	
-	//	context.fillStyle = i.color;
-	//	console.log("x")
-	// 	context.fillRect(i.x, i.y, 50, 50);
-	//}
+});
 
-	
+window.addEventListener("click", function(m) {
+	if (player.hasWeapon && player.hasWeapon != undefined) {
+		
+	} else if (player.hasKnife) {
+		
+	} else {
+		
+	}
 });
 
 window.addEventListener("beforeunload", function(e) {
-	
-	// database.ref("playersOnline/").once("value", function(snapshot) {
-	// 	database.ref("playersOnline/").set(snapshot.val() - 1);
-	// });
-	console.log("debug3 - " + playerID);
-
-	//database.ref("playersOnline/" + playerID).remove();
-
-	console.log("debug1");
 	database.ref("names/" + playerID).set(true);
 
-	console.log("debug2");
-	
 	database.ref("people/" + playerID).remove();
 });
-
-playGame();
-
-// make new that says playersOnline and when that changes redraw the entire thing.
-// that way when somebody exits it will clear them and you can't see them anymore.
 
 
 /*
