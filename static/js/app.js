@@ -13,9 +13,50 @@ var database = firebase.database();
 var canvas = document.getElementById("Canvas");
 var context = canvas.getContext("2d");
 var playerID = "";
+const shootSpeed = 3;
 
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
+
+class Bullet {
+	constructor(x, y, dir, id) {
+		this.x = x;
+		this.y = y;
+		this.direction = dir;
+		this.firedFrom = id;
+	}
+
+	move() {
+		var temp = this;
+		this.x += shootSpeed * Math.cos(this.direction);
+		this.y += shootSpeed * Math.sin(this.direction);
+		database.ref("people/").once("value", function(snapshot) {
+			database.ref("bullets/").once("value", function(bullet) {
+				for (var n of bullet.val()) {
+					if (n.firedFrom == temp.firedFrom) {
+						var indexOfBullet = bullet.val().indexOf(n);
+					}
+				}
+				database.ref("bullets/" + bullet.val()[indexOfBullet] + "/x").set(temp.x);
+				database.ref("bullets/" + bullet.val()[indexOfBullet] + "/y").set(temp.y);
+				for (var i in snapshot.val()) {
+					console.log(snapshot.val()[i].x);
+					console.log(temp);
+					console.log(temp.x);
+					if (temp.x > snapshot.val()[i].x && temp.x < snapshot.val()[i].x + 50 && temp.y > snapshot.val()[i].y && temp.y < snapshot.val()[i].y + 50 && snapshot.val()[i] != temp.firedFrom) {
+						
+						database.ref("bullets/" + bullet.val()[indexOfBullet]).remove();
+						window.close();
+					} else {
+
+						temp.move();
+					}
+				}
+			});
+			
+		});
+	}
+}
 
 class Bystander {
 	constructor(playerColor, playerName, initx, inity, startWithWeapon) {
@@ -23,7 +64,7 @@ class Bystander {
 		this.name = playerName;
 		this.x = initx;
 		this.y = inity;
-		this.hasWeapon = true;
+		this.hasWeapon = startWithWeapon;
 		this.direction = 90;
 	}
 	setDirection(newDir) {
@@ -44,7 +85,7 @@ class Murderer {
 		this.name = initName;
 		this.x = initX;
 		this.y = initY;
-		this.direction = "up";
+		this.direction = 90;
 		this.hasKnife = true;
 	}
 	
@@ -52,23 +93,21 @@ class Murderer {
 		this.direction = newDir;
 	}
 	
-	move() /*we need different directions for moving and for facing but right now lets focus on one*/{
-		if (this.direction === "up") {
-			this.y -= 10;
-		} else if (this.direction === "left") {
-			this.x -= 10;
-		} else if (this.direction === "down") {
-			this.y += 10;
-		} else if (this.direction === "right") {
-			this.x += 10;
-		}
-	}
+	// move() /*we need different directions for moving and for facing but right now lets focus on one*/{
+	// 	if (this.direction === "up") {
+	// 		this.y -= 10;
+	// 	} else if (this.direction === "left") {
+	// 		this.x -= 10;
+	// 	} else if (this.direction === "down") {
+	// 		this.y += 10;
+	// 	} else if (this.direction === "right") {
+	// 		this.x += 10;
+	// 	}
+	// }
 	stab() {
-		if (this.hasKnife) {
-			if (this.direction === "up") {
-				
-			}
-		}
+		database.ref("people/").once("value", function(snapshot) {
+
+		});
 	}
 }
 
@@ -186,49 +225,57 @@ document.onkeydown = function(event) {
 	if (keys[87] && keys.length == 1) { // w keycode
 		database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/y").set(snapshot.val() - playerMovement);
+			database.ref("people/" + playerID + "/direction").set(90);
 		});
 	}
 	if (keys[65] && keys.length == 1) { // a keycode
 	 	database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
 	 		database.ref("people/" + playerID + "/x").set(snapshot.val() - playerMovement);
+	 		database.ref("people/" + playerID + "/direction").set(180);
 	 	});
 	}
 	if (keys[83] && keys.length == 1) { // s keycode
 		database.ref("people/" + playerID + "/y").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/y").set(snapshot.val() + playerMovement);
+			database.ref("people/" + playerID + "/direction").set(270); 
 		});
 	}
 	if (keys[68] && keys.length == 1) { // d keycode
 		database.ref("people/" + playerID + "/x").once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val() + playerMovement);
+			database.ref("people/" + playerID + "/direction").set(0);
 		});
 	}
 
-	if (keys[87] && keys[68] && keys.length == 2) {
+	if (keys[87] && keys[68] && keys.length == 2) { // w + d
 		database.ref("people/" + playerID).once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val().x + playerMovement);
 			database.ref("people/" + playerID + "/y").set(snapshot.val().y - playerMovement);
+			database.ref("people/" + playerID + "/direction").set(45);
 		});
 	}
 
-	if (keys[87] && keys[65] && keys.length == 2) {
+	if (keys[87] && keys[65] && keys.length == 2) { // w + a
 		database.ref("people/" + playerID).once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val().x - playerMovement);
 			database.ref("people/" + playerID + "/y").set(snapshot.val().y - playerMovement);
+			database.ref("people/" + playerID + "/direction").set(135);
 		});
 	}
 
-	if (keys[83] && keys[68] && keys.length == 2) {
+	if (keys[83] && keys[68] && keys.length == 2) { // s + d
 		database.ref("people/" + playerID).once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val().x + playerMovement);
 			database.ref("people/" + playerID + "/y").set(snapshot.val().y + playerMovement);
+			database.ref("people/" + playerID + "/direction").set(315);
 		});
 	}
 
-	if (keys[83] && keys[65] && keys.length == 2) {
+	if (keys[83] && keys[65] && keys.length == 2) { // s + a
 		database.ref("people/" + playerID).once("value").then(function(snapshot) {
 			database.ref("people/" + playerID + "/x").set(snapshot.val().x - playerMovement);
 			database.ref("people/" + playerID + "/y").set(snapshot.val().y + playerMovement);
+			database.ref("people/" + playerID + "/direction").set(225);
 		});
 	}
 }
@@ -261,14 +308,35 @@ database.ref("people/").on("value", function(snapshot) {
 
 });
 
+database.ref("bullets/").on("value", function(snapshot) {
+	for (var i in snapshot.val()) {
+		context.clearRect(snapshot.val()[i].x - shootSpeed, snapshot.val()[i].y - shootSpeed, 50 + (shootSpeed*2), 50 + (shootSpeed*2));
+		context.fillStyle = "black";
+		context.fillRect(snapshot.val()[i].x, snapshot.val()[i].y, 10, 10);
+	}
+})
+
 window.addEventListener("click", function(m) {
-	if (player.hasWeapon && player.hasWeapon != undefined) {
+	console.log("secondTesting");
+	if (player.hasWeapon) {
 		
 	} else if (player.hasKnife) {
 		
 	} else {
 		
 	}
+	database.ref("bullets/").once("value", function(snapshot) {
+			database.ref("people/").once("value", function(players) {
+				let bulletsArr = snapshot.val();
+				if (bulletsArr == null) {
+					bulletsArr = [];
+				}
+				
+				bulletsArr.push(new Bullet(players.val()[playerID].x + 25, players.val()[playerID].y + 25, players.val()[playerID].direction, playerID));
+				database.ref("bullets/").set(bulletsArr);
+				bulletsArr[bulletsArr.length - 1].move();
+			});
+		});
 });
 
 window.addEventListener("beforeunload", function(e) {
@@ -279,30 +347,6 @@ window.addEventListener("beforeunload", function(e) {
 
 
 /*
-
-Keep in mind to press multiple keys at once
-
-var keys = {
-    length: 0
-};
-
-document.onkeydown = function(e) {
-    if (!keys[e.keyCode]) {
-        keys[e.keyCode] = true;
-        keys.length++;
-    }
-    
-    if (keys[87] && keys[68] && !keys[83] && !keys[65]) {
-    	document.body.innerHTML = "PRESSING W AND D";
-    }
-}
-
-document.onkeyup = function(e) {
-    if (keys[e.keyCode]) {
-        keys[e.keyCode] = false;
-        keys.length--;
-    }
-}
 
 setInterval(function() {    
     document.body.innerHTML = "You are pressing ".concat(keys.length, " keys at the same time");
