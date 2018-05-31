@@ -13,7 +13,7 @@ var database = firebase.database();
 var canvas = document.getElementById("Canvas");
 var context = canvas.getContext("2d");
 var playerID = "";
-const shootSpeed = 3;
+const shootSpeed = 10;
 
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
@@ -28,33 +28,47 @@ class Bullet {
 
 	move() {
 		var temp = this;
-		this.x += shootSpeed * Math.cos(this.direction);
-		this.y += shootSpeed * Math.sin(this.direction);
-		database.ref("people/").once("value", function(snapshot) {
-			database.ref("bullets/").once("value", function(bullet) {
-				for (var n of bullet.val()) {
-					if (n.firedFrom == temp.firedFrom) {
-						var indexOfBullet = bullet.val().indexOf(n);
+		var intervalID = window.setInterval(function() {
+			var counter = 0;
+			temp.x += shootSpeed * Math.cos(temp.direction);
+			temp.y += shootSpeed * Math.sin(temp.direction);
+			database.ref("people/").once("value", function(snapshot) {
+				database.ref("bullets/").once("value", function(bulletSnapshot) {
+					let bulletArr = bulletSnapshot.val();
+					
+					if (bulletArr === null) {
+						bulletArr = [];
 					}
-				}
-				database.ref("bullets/" + bullet.val()[indexOfBullet] + "/x").set(temp.x);
-				database.ref("bullets/" + bullet.val()[indexOfBullet] + "/y").set(temp.y);
-				for (var i in snapshot.val()) {
-					console.log(snapshot.val()[i].x);
-					console.log(temp);
-					console.log(temp.x);
-					if (temp.x > snapshot.val()[i].x && temp.x < snapshot.val()[i].x + 50 && temp.y > snapshot.val()[i].y && temp.y < snapshot.val()[i].y + 50 && snapshot.val()[i] != temp.firedFrom) {
-						
-						database.ref("bullets/" + bullet.val()[indexOfBullet]).remove();
-						window.close();
-					} else {
-
-						temp.move();
+					for (var n of bulletArr) {
+						console.log(n);
+						console.log(temp);
+						console.log(n.firedFrom);
+						console.log(temp.firedFrom);
+						if (n.firedFrom === temp.firedFrom) {
+							var indexOfBullet = bulletArr.indexOf(n);
+						}
 					}
-				}
+					database.ref("bullets/" + indexOfBullet + "/x").set(temp.x);
+					database.ref("bullets/" + indexOfBullet + "/y").set(temp.y);
+					for (var i in snapshot.val()) {
+						console.log(snapshot.val()[i].x);
+						console.log(temp);
+						console.log(temp.x);
+						if (temp.x > snapshot.val()[i].x && temp.x < snapshot.val()[i].x + 50 && temp.y > snapshot.val()[i].y && temp.y < snapshot.val()[i].y + 50 && snapshot.val()[i].name != temp.firedFrom) {
+							console.log("debugging");
+							database.ref("bullets/" + indexOfBullet).remove();
+							console.log("super duper debugging");
+							window.clearInterval(intervalID);
+						}
+					}
+				});
 			});
-			
-		});
+			if (++counter === 50) {
+				console.log("debugging");
+				database.ref("bullets/" + indexOfBullet).remove();
+				window.clearInterval(intervalID);
+			}
+		}, 100);
 	}
 }
 
@@ -66,9 +80,6 @@ class Bystander {
 		this.y = inity;
 		this.hasWeapon = startWithWeapon;
 		this.direction = 90;
-	}
-	setDirection(newDir) {
-		this.direction = newDir;
 	}
 	
 	
@@ -112,7 +123,6 @@ class Murderer {
 }
 
 var player;
-var player = new Bystander("default", "default", 50, 50, false);
 
 var colors = ["green", "blue", "red", "yellow", "brown", "pink", "purple"];
 var keys = { 
@@ -152,7 +162,7 @@ var names = {
 $(document).ready(function() {
 	//database.ref("people/0").set(player);
 	//database.ref("people/1").set(player2);
-	//database.ref("names/").set(names);
+	database.ref("names/").set(names);
 	//$("#header").show();
 	//$("#theButton").show();
 	$("#Canvas").hide();
@@ -317,31 +327,37 @@ database.ref("bullets/").on("value", function(snapshot) {
 })
 
 window.addEventListener("click", function(m) {
-	console.log("secondTesting");
-	if (player.hasWeapon) {
-		
-	} else if (player.hasKnife) {
-		
-	} else {
-		
-	}
-	database.ref("bullets/").once("value", function(snapshot) {
+	if ($("#Canvas").is(":visible")) {
+	
+		console.log("secondTesting");
+		if (player.hasWeapon) {
+			
+		} else if (player.hasKnife) {
+			
+		} else {
+			
+		}
+		database.ref("bullets/").once("value", function(snapshot) {
 			database.ref("people/").once("value", function(players) {
 				let bulletsArr = snapshot.val();
-				if (bulletsArr == null) {
+				if (bulletsArr === null) {
 					bulletsArr = [];
 				}
 				
 				bulletsArr.push(new Bullet(players.val()[playerID].x + 25, players.val()[playerID].y + 25, players.val()[playerID].direction, playerID));
 				database.ref("bullets/").set(bulletsArr);
 				bulletsArr[bulletsArr.length - 1].move();
+				
 			});
 		});
+	}
 });
 
 window.addEventListener("beforeunload", function(e) {
-	database.ref("names/" + playerID).set(true);
-
+	if (playerID != "") {
+		database.ref("names/" + playerID).set(true);
+	}
+	
 	database.ref("people/" + playerID).remove();
 });
 
