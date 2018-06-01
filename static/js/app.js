@@ -54,11 +54,22 @@ class Bullet {
 						console.log(snapshot.val()[i].x);
 						console.log(temp);
 						console.log(temp.x);
-						if (temp.x > snapshot.val()[i].x && temp.x < snapshot.val()[i].x + 50 && temp.y > snapshot.val()[i].y && temp.y < snapshot.val()[i].y + 50 && snapshot.val()[i].name != temp.firedFrom) {
+						if ((temp.x > snapshot.val()[i].x && temp.x < snapshot.val()[i].x + 50 && temp.y > snapshot.val()[i].y && temp.y < snapshot.val()[i].y + 50 && snapshot.val()[i].name != temp.firedFrom)) {
 							console.log("debugging");
-							database.ref("bullets/" + indexOfBullet).remove();
+							bulletArr.splice(indexOfBullet, 1);
+							context.clearRect(temp.x, temp.y, 10, 10);
+							database.ref("bullets/").set(bulletArr);
 							console.log("super duper debugging");
 							window.clearInterval(intervalID);
+							break;
+						}
+						if (temp.x > canvas.width || temp.x < 0 || temp.y > canvas.height || temp.y < 0) {
+							console.log("off the screen");
+							bulletArr.splice(indexOfBullet, 1);
+							context.clearRect(temp.x, temp.y, 10, 10);
+							database.ref("bullets/").set(bulletArr);
+							window.clearInterval(intervalID);
+							break;
 						}
 					}
 				});
@@ -123,7 +134,7 @@ class Murderer {
 }
 
 var player;
-
+var timeUntilFire = 2;
 var colors = ["green", "blue", "red", "yellow", "brown", "pink", "purple"];
 var keys = { 
 	length: 0 
@@ -162,7 +173,7 @@ var names = {
 $(document).ready(function() {
 	//database.ref("people/0").set(player);
 	//database.ref("people/1").set(player2);
-	database.ref("names/").set(names);
+	//database.ref("names/").set(names);
 	//$("#header").show();
 	//$("#theButton").show();
 	$("#Canvas").hide();
@@ -192,7 +203,7 @@ function playGame() {
 		}
 		if (playersOnline == 3) {
 			player = new Murderer("default", "default", 50, 50);
-		} else if (playersOnline == 5) {
+		} else if (playersOnline == 1) {
 			player = new Bystander("default", "default", 50, 50, true);
 		} else {
 			player = new Bystander("default", "default", 50, 50, false);
@@ -220,7 +231,7 @@ function playGame() {
 		}
 		catch(e) {
 			console.log("bad things happened");
-			error.log(e);
+			console.log(e);
 		}
 		
 	});
@@ -290,6 +301,10 @@ document.onkeydown = function(event) {
 	}
 }
 
+var countdownFire = window.setInterval(function() {
+	timeUntilFire--;
+}, 1000);
+
 document.onkeyup = function(event) {
 	if (keys[event.keyCode]) {
 		keys[event.keyCode] = false;
@@ -327,29 +342,30 @@ database.ref("bullets/").on("value", function(snapshot) {
 })
 
 window.addEventListener("click", function(m) {
-	if ($("#Canvas").is(":visible")) {
-	
+	if (timeUntilFire <= 0) {
+		timeUntilFire = 2;
 		console.log("secondTesting");
+		console.log(player);
 		if (player.hasWeapon) {
-			
+			database.ref("bullets/").once("value", function(snapshot) {
+				database.ref("people/").once("value", function(players) {
+					let bulletsArr = snapshot.val();
+					if (bulletsArr === null) {
+						bulletsArr = [];
+					}
+					
+					bulletsArr.push(new Bullet(players.val()[playerID].x + 25, players.val()[playerID].y + 25, players.val()[playerID].direction, playerID));
+					database.ref("bullets/").set(bulletsArr);
+					bulletsArr[bulletsArr.length - 1].move();
+				
+				});
+			});
 		} else if (player.hasKnife) {
 			
 		} else {
 			
 		}
-		database.ref("bullets/").once("value", function(snapshot) {
-			database.ref("people/").once("value", function(players) {
-				let bulletsArr = snapshot.val();
-				if (bulletsArr === null) {
-					bulletsArr = [];
-				}
-				
-				bulletsArr.push(new Bullet(players.val()[playerID].x + 25, players.val()[playerID].y + 25, players.val()[playerID].direction, playerID));
-				database.ref("bullets/").set(bulletsArr);
-				bulletsArr[bulletsArr.length - 1].move();
-				
-			});
-		});
+		
 	}
 });
 
